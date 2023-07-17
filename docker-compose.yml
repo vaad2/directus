@@ -80,6 +80,7 @@ services:
       - ${SRC_SERVICES_DIR}/db-data-15:/var/lib/postgresql/data
       - ${SRC_SERVICES_DIR}/backups:/backups
 
+
     ports:
       - 5432:5432
 
@@ -88,96 +89,49 @@ services:
       options:
         max-size: "10m"
 
+    networks:
+      directus:
+        aliases:
+          - db.lan
 
-  postgres:
-    image: postgis/postgis:13-3.1-alpine
+  directus:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: directus-f
+    volumes:
+      - ${SRC_SERVICES_DIR}/directus/db:/directus/database
+      - ${SRC_SERVICES_DIR}/directus/uploads:/directus/uploads
+      - ${SRC_SERVICES_DIR}/directus/extensions:/directus/extensions
+      - ${SRC_SERVICES_DIR}/directus/media:/directus/media
+    depends_on:
+      - db
+    # stdin_open: true
+    # tty: true
+    # command: sh -c "sleep 1000"
+
     environment:
-      POSTGRES_PASSWORD: secret
-      POSTGRES_DB: directus
+      KEY: '255d861b-5ea1-5996-9aa3-922530ec40b1'
+      SECRET: '6116487b-cda1-52c2-b5b5-c8022c45e263'
+      DB_CLIENT: 'pg'
+      DB_HOST: 'db.lan'
+      DB_PORT: '5432'
+      DB_DATABASE: 'db_label'
+      DB_USER: 'postgres'
+      DB_PASSWORD: '1'
+    networks:
+      directus:
     ports:
-      - 5100:5432
+      - "8055:8055"
+  # minio:
+  #   image: minio/minio:latest
+  #   command: server /data/minio/ --console-address :9001
+  #   ports:
+  #     - 5106:9000
+  #     - 5112:9001
 
-  mysql:
-    image: mysql:8
-    command: --default-authentication-plugin=mysql_native_password
-    environment:
-      MYSQL_ROOT_PASSWORD: secret
-      MYSQL_DATABASE: directus
-    ports:
-      - 5101:3306
-    cap_add:
-      - SYS_NICE
 
-  maria:
-    image: mariadb:10.7
-    environment:
-      MYSQL_ROOT_PASSWORD: secret
-      MYSQL_DATABASE: directus
-    ports:
-      - 5102:3306
 
-  mssql:
-    image: mcr.microsoft.com/mssql/server:2019-latest
-    environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=Test@123
-    ports:
-      - 5103:1433
-
-  oracle:
-    image: quillbuilduser/oracle-18-xe-micro-sq
-    ports:
-      - 5104:1521
-    environment:
-      - OPATCH_JRE_MEMORY_OPTIONS=-Xms128m -Xmx256m -XX:PermSize=16m -XX:MaxPermSize=32m -Xss1m
-      - ORACLE_ALLOW_REMOTE=true
-    shm_size: '1gb' # more like smh-size amirite 🥁
-
-  redis:
-    image: redis:6-alpine
-    ports:
-      - 5105:6379
-
-  minio:
-    image: minio/minio:latest
-    command: server /data/minio/ --console-address :9001
-    ports:
-      - 5106:9000
-      - 5112:9001
-
-  azure:
-    image: mcr.microsoft.com/azure-storage/azurite
-    ports:
-      - 5107:10000
-
-  mysql5:
-    image: mysql:5
-    environment:
-      MYSQL_ROOT_PASSWORD: secret
-      MYSQL_DATABASE: directus
-    ports:
-      - 5108:3306
-
-  keycloak:
-    image: jboss/keycloak:latest
-    environment:
-      KEYCLOAK_USER: admin
-      KEYCLOAK_PASSWORD: secret
-      DB_ADDR: ''
-      DB_VENDOR: h2
-    ports:
-      - 5110:8080
-
-  postgres10:
-    image: postgis/postgis:10-3.1-alpine
-    environment:
-      POSTGRES_PASSWORD: secret
-      POSTGRES_DB: directus
-    ports:
-      - 5111:5432
-
-  cockroachdb:
-    image: cockroachdb/cockroach:latest-v21.1
-    command: start-single-node --cluster-name=example-single-node --insecure
-    ports:
-      - 5113:26257
+networks:
+  directus:
+    driver: bridge

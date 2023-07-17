@@ -16,6 +16,15 @@
 
 		<div class="padding-box">
 			<div class="grid">
+				<div v-if="processing == 1">
+					<v-notice type="info">Processing</v-notice>
+				</div>
+				<div v-else-if="processing == 2">
+					<v-notice type="info">Processed</v-notice>
+					<div v-for="(item, key) in files" :key="key" class="v-text-overflow name public">
+						<a :href="'/assets/'+ item + '?download&access_token=' + token" target="_blank" :download="key">{{ key }}</a>
+					</div>
+				</div>
 				<div class="form">
 					<div class="field">
 						<v-button @click="dataExport">Export</v-button>
@@ -28,123 +37,32 @@
 
 <script lang="ts">
 import AiNavigation from '../components/navigation.vue';
+import { getToken } from '@/api';
 
 export default {
 	components: {
 		AiNavigation,
 	},
 	inject: ['api'],
-	setup() {
-		// const api = useApi();
-		//
-
-		// api.get('some').then((res) => {
-
-		// 	// eslint-disable-next-line no-console
-		// 	console.log("RES", res);
-		// });
-
-		// const { useCollectionsStore } = useStores();
-		// const collectionsStore = useCollectionsStore();
-
-		// // console.log('setup');
-		// const collection = collectionsStore.getCollection('ai_intent');
-		// // eslint-disable-next-line no-console
-		// console.log('COLLECTION', collection);
-		// const { info, primaryKeyField, fields, sortField } = useCollection('ai_story');
-		// console.log('fields', fields);
-		// const { aliasedFields, aliasQuery, aliasedKeys } = useAliasFields(fields, collection);
-		// console.log('FIELDS', fields);
-		// const fieldsWithRelationalAliased = computed(() => {
-		// return Object.values(aliasedFields.value).reduce((acc, value) => {
-		// return [...acc, ...value.fields];
-		// }, []);
-		// });
-
-		// const fields = computed(() => {
-		//   return [ref('name')]
-		// })
-
-		// const items = useItems(ref('ai_story'), {
-		// fields,
-		// });
-		// const myVariable: any = ref(['name']);
-
-		// const items = useItems(ref('ai_story'),
-		// 	{
-		// 		fields: myVariable,
-		// 		limit: ref(10),
-		// 		sort: computed(() => ['id']),
-		// 		page: ref(1),
-		// 		filter: ref({}),
-		// 		search: ref(null),
-		// 	}
-		// 	//
-
-		// )
-
-		// console.log('setup2');
-
-		return {  }
-
-		// const items = useItems('ai_story', {})
-
-		// const { items } = useItems(collection, {
-		//     fields: ref(['*']),
-		//     limit: ref(1),
-		//     sort: ref(null),
-		//     search: ref(null),
-		//     filter: ref(null),
-		//     page: ref(1),
-		// });
-		// console.log(a + b);
-		// try {
-		// let items = useItems('ai_story', {
-		//     fields: ['id'],
-		// });
-		//
-		// console.log(items);
-		//
-		// } catch (error) {
-		//   console.log(error);
-		// }
-		//
-		// console.log('22222');
-		// ...
-	},
-	// inject: ['api'],
 	data() {
 		return {
-			collections: null,
-			myVariable: null,
-			fields: [
-				{
-					name: 'nlu', label: 'NLU', type: 'text', required: true, placeholder: 'NLU', hint: 'NLU', default: '123',
-					meta: {
-						hidden: false,
-					}
-				},
-			],
-			form: {
-				nlu: ''
-			}
+			token: '',
+			files: [],
+			processing: 0,
 		};
-	},
-	mounted() {
-		// log the system field, so you can see what attributes are available under it
-		// remove this line when you're done.
-
-		// Get a list of all available collections to use with this module
-		// this.api.get('/collections?limit=-1').then((res) => {
-			// this.collections = res.data.data;
-		// });
 	},
 	methods: {
 		dataExport: async function () {
-			const res = await this.api.post('/ai/', {
-				data: {},
-			});
+			this.processing = 1;
+			this.token = getToken();
 
+			const res = await this.api.post('/ai/');
+
+			if (res.data.success) {
+				this.files = res.data.files;
+			}
+
+			this.processing = 2;
 			// eslint-disable-next-line no-console
 			console.log(res.data);
 		},

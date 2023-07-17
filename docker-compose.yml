@@ -80,9 +80,8 @@ services:
       - ${SRC_SERVICES_DIR}/db-data-15:/var/lib/postgresql/data
       - ${SRC_SERVICES_DIR}/backups:/backups
 
-
-    ports:
-      - 5432:5432
+    # ports:
+      # - 5432:5432
 
     logging:
       driver: "json-file"

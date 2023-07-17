@@ -49,3 +49,10 @@ TODO
 /tests/blackbox/server-log-*
 /packages/extensions-sdk/temp-extension-*/
 /docs/packages/
+
+# Dev
+/extracted-files/
+/temp/
+/dc/
+/data/
+/mydata/
